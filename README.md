@@ -1,4 +1,4 @@
-# PC Network Traffic Flow Analyzer (NetFlowLyzer)
+# Network Traffic Flow Analyzer (NetFlowLyzer)
 
 
 ### Application Layer Flow Analyzer (ALFlowLyzer)
