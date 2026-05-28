@@ -6,13 +6,13 @@ Unlike traditional traffic analyzers that focus on isolated protocol layers, Net
 
 NetFlowLyzer is designed to support cybersecurity research, AI/ML-based intrusion detection systems, encrypted traffic analysis, enterprise traffic monitoring, malware analysis, threat hunting, behavioral profiling, and large-scale cybersecurity dataset generation for modern enterprise, IoT, cloud, SDN, and next-generation network environments.
 
-### Application Layer Flow Analyzer (ALFlowLyzer)
+### [Application Layer Flow Analyzer (ALFlowLyzer)](https://github.com/ahlashkari/ALFlowLyzer)
 ALFlowLyzer focuses on extracting application-layer flow-based features from network traffic. The analyzer reconstructs bidirectional application flows and extracts protocol-aware statistical, timing, and behavioral features from protocols such as HTTP, HTTPS, DNS, MQTT, FTP, SMTP, SSH, Telnet, and other application-level communications. ALFlowLyzer is designed to support application-layer intrusion detection, encrypted traffic analysis, malware communication profiling, and AI/ML-driven behavioral analytics.
 
-### Transport and Network Layers Flow Analyzer (NTLFlowLyzer)
+### [Transport and Network Layers Flow Analyzer (NTLFlowLyzer)](https://github.com/ahlashkari/NTLFlowLyzer)
 NTLFlowLyzer is responsible for extracting flow-based features from the Network and Transport layers. The analyzer supports TCP, UDP, ICMP, QUIC, and IP-level traffic analysis while generating rich statistical, temporal, directional, and behavioral features from bidirectional network flows. The framework is designed for intrusion detection, DDoS analysis, anomaly detection, traffic classification, and large-scale AI-driven cybersecurity analytics.
 
-### Data Link Layer Flow Analyzer (DLLFlowLyzer)
+### [Data Link Layer Flow Analyzer (DLLFlowLyzer)](https://github.com/ahlashkari/DLLFlowlyzer)
 DLLFlowLyzer focuses on Data Link Layer behavioral analysis and feature extraction. The analyzer supports Layer-2 protocols and enterprise switching environments, including ARP, STP, CDP, DHCP, DTP, ISL, LLC, VLAN-related traffic, and other switching/control-plane communications. DLLFlowLyzer enables protocol-aware behavioral profiling and flow generation for enterprise network security, Layer-2 intrusion detection, attack detection, switching protocol analysis, and AI-based behavioral monitoring of modern enterprise infrastructures.
 
 
