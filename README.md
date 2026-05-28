@@ -1,3 +1,6 @@
+![](https://github.com/ahlashkari/NetFlowLyzer/blob/main/bccc.jpg)
+
+
 ## Network Flow Analyzer (NetFlowLyzer)
 
 NetFlowLyzer is an open-source, Python-based multi-layer network traffic analyzer designed for comprehensive flow-based behavioral analysis across the four major layers of modern network communications: Data Link Layer, Network Layer, Transport Layer, and Application Layer. The framework integrates multiple specialized analyzers into a unified traffic analysis platform capable of extracting more than 1000 protocol-aware statistical and behavioral features from raw PCAP traffic in real time.
