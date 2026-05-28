@@ -1,0 +1,14 @@
+- Files:
+      PCAP_PATH : "./test.pcap"
+      FINAL_FILE_PATH : "Res"
+      FINAL_FILE_NAME : "FINAL.csv"
+
+- Capture:
+      CAP_UDP : False
+      JUSTTCP : False
+      extra : False
+      features : ["l","s","a","t","d","i","c","h"]
+
+- Flow:
+      TimeOut : 120000
+      activity_timeout: 300
