@@ -20,15 +20,18 @@ DLLFlowLyzer focuses on Data Link Layer behavioral analysis and feature extracti
 ## Project Team members 
 
 * [**Arash Habibi Lashkari:**](http://ahlashkari.com/index.asp) Founder and supervisor
+
 For ALFlowLyzer:
 * [**Moein Shafi:**](https://github.com/moein-shafi) Graduate student, Researcher and developer - York University
 * [**Hardik Mohanty:**](https://github.com/hardhik-99) Mitacs Global Research Internship (GRI), Researcher and developer - York University
+
 For NTLFlowLyzer:
 * [**Moein Shafi:**](https://github.com/moein-shafi) Graduate student, Researcher and developer - York University ( 2 years, 2022 - 2024)
 * [**Mohamed Aziz El Fadhel:**](https://github.com/MohamedAzizFadhel) Mitacs Global Research Intern, Researcher and developer - York University (4 months, 2024-2024)
 * [**Sepideh Niktabe:**](https://github.com/sepideh2020) Graduate students, Researcher and developer - York University (6 months, 2022-2023)
 * [**Mehrsa Khoshpasand:**](https://github.com/Khoshpasand-mehrsa) Researcher Assistant (RA) - York University (3 months, 2022)
 * [**Parisa Ghanad:**](https://github.com/parishisit) Volunteer Researcher and developer (4 months, 2022)
+
 For DLLFlowLyzer:
 * [**Amirhossein Ahmadnejad Roudsari:**](https://github.com/aahmadnejad) Graduate researcher and developer - York University (2024-2025)
 
