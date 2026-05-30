@@ -5,6 +5,7 @@ import glob
 import importlib.util
 import json
 import os
+import subprocess
 import sys
 import tempfile
 from contextlib import contextmanager
@@ -15,7 +16,8 @@ from NTLFlowLyzer.__main__ import main as ntl_main
 DEFAULT_INPUT_DIR = os.path.join("..", "input")
 DEFAULT_OUTPUT_DIR = os.path.join("..", "output")
 DL_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "DLFlowLyzer")
-LAYER_SUFFIX = {"AL": "AL", "NTL": "NTL", "DL": "DL"}
+QUIC_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "QUICFlowLyzer")
+LAYER_SUFFIX = {"AL": "AL", "NTL": "NTL", "DL": "DL", "Q": "Q"}
 
 _dl_module = None
 
@@ -57,7 +59,8 @@ def create_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("-AL", action="store_true", help="Run ALFlowLyzer")
-    parser.add_argument("-NTL", action="store_true", help="Run NTLFlowLyzer")
+    parser.add_argument("-NTL", action="store_true", help="Run NTLFlowLyzer (TCP/IP transport, TCP-focused)")
+    parser.add_argument("-Q", action="store_true", help="Run QUICFlowLyzer (QUIC transport features)")
     parser.add_argument("-DL", action="store_true", help="Run DLFlowLyzer")
     parser.add_argument(
         "-i",
@@ -233,6 +236,36 @@ def run_ntl(pcap_path: str, csv_path: str, config_file: str | None, parallel: bo
         ntl_main()
 
 
+def run_quic(pcap_path: str, csv_path: str):
+    quic_cap = os.path.join(QUIC_ROOT, "quic_cap")
+    if not os.path.isdir(quic_cap):
+        raise FileNotFoundError(f"QUICFlowLyzer not found at {QUIC_ROOT}")
+
+    pcap_path = os.path.abspath(pcap_path)
+    csv_path = os.path.abspath(csv_path)
+    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+
+    env = os.environ.copy()
+    quic_root = os.path.abspath(QUIC_ROOT)
+    env["PYTHONPATH"] = quic_root + os.pathsep + env.get("PYTHONPATH", "")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "quic_cap.features.feat_cli",
+            "--pcap",
+            pcap_path,
+            "--features-out",
+            csv_path,
+        ],
+        cwd=quic_root,
+        env=env,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"QUICFlowLyzer failed with exit code {result.returncode}")
+
+
 def ensure_tshark_on_path() -> None:
     wireshark = r"C:\Program Files\Wireshark"
     if os.name == "nt" and os.path.isdir(wireshark):
@@ -288,8 +321,17 @@ def run_layer(layer: str, pcap_path: str, csv_path: str, args, parallel: bool, e
         return
 
     if layer == "NTL":
-        print("Starting NTLFlowLyzer...")
+        print("Starting NTLFlowLyzer (TCP-focused transport)...")
         run_ntl(pcap_path, csv_path, args.ntl_config_file, parallel, extra_args)
+        return
+
+    if layer == "Q":
+        print("Starting QUICFlowLyzer...")
+        run_quic(pcap_path, csv_path)
+        if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
+            print(f"[Q] CSV created: {csv_path}")
+        else:
+            print(f"[Q] Warning: expected output missing or empty: {csv_path}")
         return
 
     if layer == "DL":
@@ -311,6 +353,8 @@ def main():
         selected.append("AL")
     if args.NTL:
         selected.append("NTL")
+    if args.Q:
+        selected.append("Q")
     if args.DL:
         selected.append("DL")
 
@@ -321,7 +365,7 @@ def main():
         print("Parallel mode: AL/NTL may spawn many Python workers (extra firewall prompts).")
     else:
         print(
-            "Single-process mode (default): one Python process for AL/NTL, "
+            "Single-process mode (default): one Python process per analyzer, "
             "no WHOIS lookups — allow Python through Windows Firewall once if prompted."
         )
 

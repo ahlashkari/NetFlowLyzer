@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "QUICFlowLyzer"
+version = "0.1.0"
+description = "Header-only QUIC network traffic flow analyzer"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["dpkt"]
+
+[tool.setuptools]
+packages = ["quic_cap", "quic_cap.features"]
+py-modules = ["vxlan"]
