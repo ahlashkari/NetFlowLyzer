@@ -2,37 +2,35 @@
 
 ## Network Flow Analyzer (NetFlowLyzer)
 
-NetFlowLyzer is an open-source, Python-based multi-layer network traffic analyzer for flow-based behavioral analysis from PCAP files. It is organized around the **TCP/IP model (four layers)** and provides **feature extraction for all four layers** through integrated sub-packages and one unified command-line entry point (`netflowlyzer.py`).
+NetFlowLyzer is an open-source, Python-based multi-layer network traffic analyzer for flow-based behavioral analysis from PCAP files. Unlike tools that focus on a single layer or a single transport protocol, NetFlowLyzer covers the **full TCP/IP stack**—**Link** (`-DL`), **Internet** and **TCP** transport (`-NTL`), **Application** (`-AL`), plus **UDP** (`-U`) and **QUIC** (`-Q`) transport flows—in one unified offline workflow. It combines link-layer switching behavior, internet and transport flow characteristics across TCP, UDP, and QUIC, and application-level protocol interactions and provides **feature extraction for all four layers both TCP and UDP** through integrated sub-packages and one unified command-line entry point (`netflowlyzer.py`). NetFlowLyzer supports bidirectional flow generation, protocol-aware parsing, connection tracking, timing analysis, and behavioral profiling.
 
-### TCP/IP coverage (4 layers)
+### TCP and UDP coverage (4 layers)
 
 | TCP/IP layer | Name | Analyzer | Flag |
 |--------------|------|----------|------|
 | **4** | Application | [ALFlowLyzer](https://github.com/ahlashkari/ALFlowLyzer) | `-AL` |
 | **3** | Transport (TCP) | [NTLFlowLyzer](https://github.com/ahlashkari/NTLFlowLyzer) | `-NTL` |
-| **3** | Transport (UDP) | [UDPFlowLyzer](https://github.com/ahlashkari/UDPFlowLyzer) | *(standalone; see below)* |
+| **3** | Transport (UDP) | [UDPFlowLyzer](https://github.com/ahlashkari/UDPFlowLyzer) | `-U` |
 | **3** | Transport (QUIC) | [QUICFlowLyzer](https://github.com/ahlashkari/QUICFlowLyzer) | `-Q` |
 | **2** | Internet (Network) | [NTLFlowLyzer](https://github.com/ahlashkari/NTLFlowLyzer) | `-NTL` |
 | **1** | Link (Data link / network access) | [DLFlowLyzer](https://github.com/ahlashkari/DLFlowLyzer) | `-DL` |
 
-**AL** covers TCP/IP **Application** (layer 4). **NTL** covers **Internet** and **TCP-focused transport** (layers 2–3). **DL** covers the **Link** layer (layer 1). **QUIC** transport features are available in this repo via **`-Q`**. **UDP** transport features use the dedicated [UDPFlowLyzer](https://github.com/ahlashkari/UDPFlowLyzer) repository (not bundled here yet).
+**ALFlowLyzer** (`-AL`) covers TCP/IP **Application** (layer 4). **NTLFlowLyzer** (`-NTL`) covers **Internet** and **TCP-focused transport** (layers 2–3). **DLFlowLyzer** (`-DL`) covers the **Link** layer (layer 1). **QUICFlowLyzer** (`-Q`) adds **QUIC** transport features (bundled in this repo). **UDPFlowLyzer** (`-U`) provides dedicated **UDP** transport features (standalone repository; not bundled here yet).
 
-Running `-NTL -AL -DL` (or no layer flags) extracts features across the **core TCP/IP stack**. Add **`-Q`** when the capture contains QUIC traffic.
+Running `-NTL -AL -DL` (or no layer flags) extracts features across the **core TCP/IP stack**. Add **`-Q`** for QUIC or **`-U`** for UDP when the capture needs those transport analyzers.
 
 ```
 TCP/IP stack          NetFlowLyzer
 ────────────────────────────────────
 4  Application   →    ALFlowLyzer     (-AL)
 3  Transport     →    NTLFlowLyzer    (-NTL)   TCP + Internet
-                 →    UDPFlowLyzer    (standalone repo)
+                 →    UDPFlowLyzer    (-U)
                  →    QUICFlowLyzer   (-Q)     QUIC
 2  Internet      →    NTLFlowLyzer    (-NTL)
 1  Link          →    DLFlowLyzer     (-DL)
 ```
 
-Together the three analyzers extract more than **1000** protocol-aware statistical and behavioral features from raw PCAP traffic. Processing is **offline** (PCAP in, CSV out), not live packet capture.
-
-Unlike tools that focus on a single layer, NetFlowLyzer combines link-layer switching behavior, internet/transport flow characteristics, and application-level interactions in one workflow. It supports bidirectional flow generation, protocol-aware parsing, connection tracking, timing analysis, and behavioral profiling.
+Together the five analyzers extract more than **1000** protocol-aware statistical and behavioral features from raw PCAP traffic. Processing is **offline** (PCAP in, CSV out), not live packet capture.
 
 NetFlowLyzer targets cybersecurity research, AI/ML intrusion detection, encrypted traffic analysis, enterprise monitoring, malware analysis, threat hunting, and large-scale labeled dataset generation.
 
@@ -128,8 +126,9 @@ For each input `basename.pcap`, selected layers write:
 - `basename-AL.csv`
 - `basename-DL.csv`
 - `basename-Q.csv` (when `-Q` is selected)
+- `basename-U.csv` (when `-U` is selected; via standalone UDPFlowLyzer today)
 
-Example: `2.pcap` with `-NTL -AL -DL -Q` → `2-NTL.csv`, `2-AL.csv`, `2-DL.csv`, `2-Q.csv` in the output folder. UDPFlowLyzer (standalone) typically writes a separate `*_udp.csv` per its config.
+Example: `2.pcap` with `-NTL -AL -DL -Q` → `2-NTL.csv`, `2-AL.csv`, `2-DL.csv`, `2-Q.csv` in the output folder.
 
 ---
 
@@ -144,7 +143,8 @@ python netflowlyzer.py [layer flags] [options]
 | `-NTL` | Run NTLFlowLyzer — TCP/IP **Internet + Transport** (layers 2–3) |
 | `-AL` | Run ALFlowLyzer — TCP/IP **Application** (layer 4) |
 | `-DL` | Run DLFlowLyzer — TCP/IP **Link** (layer 1) |
-| `-Q` | Run [QUICFlowLyzer](https://github.com/ahlashkari/QUICFlowLyzer) — QUIC transport features (header-level, no decryption) |
+| `-Q` | Run QUICFlowLyzer — QUIC transport features (header-level, no decryption) |
+| `-U` | Run UDPFlowLyzer — UDP transport features *(standalone repo; not wired in `netflowlyzer.py` yet)* |
 | *(no layer flags)* | Run all three analyzers (full TCP/IP stack) |
 | `-i`, `--input`, `--input-dir` `PATH` | Folder of `.pcap` files **or** path to one `.pcap` |
 | `-o`, `--output-dir` `DIR` | Output folder for CSV files (default: `../output`) |
@@ -195,7 +195,7 @@ At the transport layer, NetFlowLyzer treats **TCP**, **UDP**, and **QUIC** as se
 | Protocol | Analyzer | In NetFlowLyzer | Output (typical) |
 |----------|----------|-----------------|------------------|
 | **TCP** | NTLFlowLyzer | `-NTL` | `basename-NTL.csv` |
-| **UDP** | [UDPFlowLyzer](https://github.com/ahlashkari/UDPFlowLyzer) | Standalone repo | `*_udp.csv` (per upstream config) |
+| **UDP** | UDPFlowLyzer | `-U` *(standalone)* | `basename-U.csv` |
 | **QUIC** | [QUICFlowLyzer](https://github.com/ahlashkari/QUICFlowLyzer) | `-Q` | `basename-Q.csv` |
 
 #### [UDPFlowLyzer](https://github.com/ahlashkari/UDPFlowLyzer) — UDP transport
@@ -216,7 +216,7 @@ pip install scipy multipledispatch dpkt
 python -m NTLFlowLyzer -U -c config.json
 ```
 
-Set `pcap_file_address` and `udp_output_file_address` in `config.json` before running. Unified `-U` support in `netflowlyzer.py` may be added in a future release.
+Set `pcap_file_address` and `udp_output_file_address` in `config.json` before running. The **`-U`** flag is the UDP counterpart to **`-Q`**; unified `-U` support in `netflowlyzer.py` is planned for a future release.
 
 #### [QUICFlowLyzer](https://github.com/ahlashkari/QUICFlowLyzer) — QUIC transport
 
