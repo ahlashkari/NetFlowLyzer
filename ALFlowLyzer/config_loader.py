@@ -16,7 +16,7 @@ class ConfigLoader:
         self.features_ignore_list: list = []
         self.number_of_threads: int = multiprocessing.cpu_count()
         self.single_process: bool = False
-        self.label = "Unknown"
+        self.label = ""
         self.feature_extractor_min_flows = 4000
         self.writer_min_rows = 6000
         self.read_packets_count_value_log_info = 10000

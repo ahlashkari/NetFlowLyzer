@@ -387,7 +387,7 @@ def flow_feature_ext(data, EXTRA, FEATURES):
                 cdp_tlv = [col for col in data.columns if 'cdp' in col and 'tlv' in col]
                 sum_cdp_tlv = 0
                 for col in cdp_tlv:
-                    sum_cdp_tlv += data[col].sum(skipskipna=True)
+                    sum_cdp_tlv += data[col].sum(skipna=True)
                 res['sum_cdp_tlvs'] = sum_cdp_tlv
                 del(cdp_tlv)
                 del(sum_cdp_tlv)
@@ -421,6 +421,7 @@ def flow_feature_ext(data, EXTRA, FEATURES):
             try: res['norm_cdp_power_sum'] = norm(data['cdp_power_sum'].values)
             except: res['norm_cdp_power_sum'] = np.nan
 
+    res['label'] = ''
     return res
         
         

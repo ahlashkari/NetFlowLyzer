@@ -2,6 +2,7 @@ from IO.pcapExt import pcap_reader
 from IO.csvSave import pkt_csv, flow_csv
 import argparse
 import os
+import shutil
 import tempfile
 import warnings
 import yaml
@@ -65,23 +66,28 @@ def run_dl_analysis(pcap_path: str, flow_output_path: str, work_dir: str | None 
     """Entry point for NetFlowLyzer: write flow features directly to flow_output_path."""
     setting = _load_yaml_settings()
     capture = setting[1]["Capture"]
+    created_work_dir = work_dir is None
     if work_dir is None:
         work_dir = tempfile.mkdtemp(prefix="netflowlyzer-dl-")
-    configure_globals(
-        pcap_path=os.path.normpath(pcap_path),
-        final_file_path=work_dir,
-        final_file_name="packets.csv",
-        cap_udp=capture["CAP_UDP"],
-        just_tcp=capture["JUSTTCP"],
-        extra=capture["extra"],
-        features=capture["features"],
-    )
-    print(
-        f"DLFlowLyzer: PCAP={PCAP_PATH}\n"
-        f"  work_dir={FINAL_FILE_PATH}\n"
-        f"  output={os.path.normpath(flow_output_path)}"
-    )
-    extract_save(flow_output_path=os.path.abspath(flow_output_path))
+    try:
+        configure_globals(
+            pcap_path=os.path.normpath(pcap_path),
+            final_file_path=work_dir,
+            final_file_name="packets.csv",
+            cap_udp=capture["CAP_UDP"],
+            just_tcp=capture["JUSTTCP"],
+            extra=capture["extra"],
+            features=capture["features"],
+        )
+        print(
+            f"DLFlowLyzer: PCAP={PCAP_PATH}\n"
+            f"  work_dir={FINAL_FILE_PATH}\n"
+            f"  output={os.path.normpath(flow_output_path)}"
+        )
+        extract_save(flow_output_path=os.path.abspath(flow_output_path))
+    finally:
+        if created_work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
 
 
 if __name__ == "__main__":

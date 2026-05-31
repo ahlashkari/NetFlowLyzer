@@ -7,7 +7,6 @@ from dpkt import ethernet
 import socket
 import os
 import time
-from collections import defaultdict, Counter
 from .packet import Packet
 from .flow import Flow
 
@@ -41,7 +40,6 @@ class NetworkFlowCapturer:
 
     def pcap_summary(self, address):
         ip_count, tcp_count, udp_count = 0, 0, 0
-        app_protocol_count = defaultdict(int)
         try:
             f = open(address, 'rb')
             pcap = dpkt.pcap.Reader(f)
@@ -91,12 +89,10 @@ class NetworkFlowCapturer:
 
                 if isinstance(ip.data, dpkt.udp.UDP):
                     udp_count += 1
-                    app_protocol_count[eth.data.data.dport] += 1
                     continue
 
                 if isinstance(ip.data, dpkt.tcp.TCP):
                     tcp_count += 1
-                    app_protocol_count[eth.data.data.dport] += 1
 
 
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError, Exception) as e:
@@ -113,15 +109,17 @@ class NetworkFlowCapturer:
         print(f"  Total TCP packets: {tcp_count}")
         print(f"  Percentage of TCP packets: {(tcp_count / total_packets) * 100:.2f}%\n")
 
-        print("Number and percentage of UDP packets:")
-        print(f"  Total UDP packets: {udp_count}")
-        print(f"  Percentage of UDP packets: {(udp_count / total_packets) * 100:.2f}%\n")
+        # NTL is TCP-focused; UDP breakdown is handled by UDPFlowLyzer / ALFlowLyzer.
+        # print("Number and percentage of UDP packets:")
+        # print(f"  Total UDP packets: {udp_count}")
+        # print(f"  Percentage of UDP packets: {(udp_count / total_packets) * 100:.2f}%\n")
 
-        top_protocols = Counter(app_protocol_count).most_common(10)
-        print("Top 10 Application Layer Protocols:")
-        for port, count in top_protocols:
-            protocol_name = self.get_protocol_name(port)
-            print(f"  Port {port} ({protocol_name}): {count} packets, {(count / total_packets) * 100:.2f}%")
+        # Application-layer port ranking belongs in ALFlowLyzer, not NTL (transport/network).
+        # top_protocols = Counter(app_protocol_count).most_common(10)
+        # print("Top 10 Application Layer Protocols:")
+        # for port, count in top_protocols:
+        #     protocol_name = self.get_protocol_name(port)
+        #     print(f"  Port {port} ({protocol_name}): {count} packets, {(count / total_packets) * 100:.2f}%")
 
         print(50 * "=")
         self.ip_packets += ip_count
@@ -264,9 +262,10 @@ class NetworkFlowCapturer:
         print(f"      Total TCP packets: {self.tcp_packets}")
         print(f"      Percentage of TCP packets: {(self.tcp_packets / self.all_packets) * 100:.2f}%\n")
 
-        print(">>> Number and percentage of UDP packets:")
-        print(f"      Total UDP packets: {self.udp_packets}")
-        print(f"      Percentage of UDP packets: {(self.udp_packets / self.all_packets) * 100:.2f}%\n")
+        # NTL is TCP-focused; UDP breakdown is handled by UDPFlowLyzer / ALFlowLyzer.
+        # print(">>> Number and percentage of UDP packets:")
+        # print(f"      Total UDP packets: {self.udp_packets}")
+        # print(f"      Percentage of UDP packets: {(self.udp_packets / self.all_packets) * 100:.2f}%\n")
         print(50 * "#")
 
         print(">> Preparing the output file...")

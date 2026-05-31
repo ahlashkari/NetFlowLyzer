@@ -3,6 +3,7 @@
 import dpkt
 import multiprocessing
 import threading
+import time
 import warnings
 from multiprocessing import Process, Manager, Pool
 from .application_flow_capturer import AppFlowCapturer
@@ -149,11 +150,13 @@ class ALFlowLyzer(object):
 
     def _feature_extractor_single(self, feature_extractor: FeatureExtractor):
         while True:
+            did_work = False
             if len(self.__flows) >= self.__config.feature_extractor_min_flows:
                 temp_flows = []
                 with self.__flows_lock:
                     temp_flows.extend(self.__flows)
                     self.__flows[:] = []
+                print(f">> Extracting features of {len(temp_flows)} flows...", flush=True)
                 feature_extractor.execute(
                     self.__data,
                     self.__data_lock,
@@ -161,12 +164,17 @@ class ALFlowLyzer(object):
                     self.__config.features_ignore_list,
                     self.__config.label,
                 )
+                did_work = True
             if self.__capturer_thread_finish.get():
                 if len(self.__flows) > 0:
                     temp_flows = []
                     with self.__flows_lock:
                         temp_flows.extend(self.__flows)
                         self.__flows[:] = []
+                    print(
+                        f">> Extracting features of the last {len(temp_flows)} flows...",
+                        flush=True,
+                    )
                     feature_extractor.execute(
                         self.__data,
                         self.__data_lock,
@@ -174,7 +182,10 @@ class ALFlowLyzer(object):
                         self.__config.features_ignore_list,
                         self.__config.label,
                     )
+                print(">> Feature extraction finished; writing CSV...", flush=True)
                 return
+            if not did_work:
+                time.sleep(0.05)
 
     def feature_extractor(self, pool: Pool):
         feature_extractor = FeatureExtractor(self.__config.floating_point_unit)
@@ -184,15 +195,26 @@ class ALFlowLyzer(object):
                 with self.__flows_lock:
                     temp_flows.extend(self.__flows)
                     self.__flows[:] = []
+                print(f">> Extracting features of {len(temp_flows)} flows...", flush=True)
                 pool.starmap_async(feature_extractor.execute,
                         [(self.__data, self.__data_lock, temp_flows,
                         self.__config.features_ignore_list, self.__config.label)])
                 del temp_flows
             if self.__capturer_thread_finish.get():
                 if len(self.__flows) > 0:
+                    temp_flows = []
+                    with self.__flows_lock:
+                        temp_flows.extend(self.__flows)
+                        self.__flows[:] = []
+                    print(
+                        f">> Extracting features of the last {len(temp_flows)} flows...",
+                        flush=True,
+                    )
                     pool.starmap_async(feature_extractor.execute,
-                            [(self.__data, self.__data_lock, self.__flows,
+                            [(self.__data, self.__data_lock, temp_flows,
                             self.__config.features_ignore_list, self.__config.label)])
+                    del temp_flows
+                print(">> Feature extraction finished; writing CSV...", flush=True)
                 return
 
     def writer(self):

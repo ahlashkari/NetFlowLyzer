@@ -50,23 +50,23 @@ def flow_pred(file, EXTRA, FEATURES, CAP_UDP):
     checked = []
     for i in range(len(bbb)):
         in_it = -1
-        if len(checked)>0:
-            _,stream = zip(*checked)
-            if bbb[i].iloc[0]['connection'] == 'TCP' and bbb[i].iloc[0]['tcp_stream'] not in stream:
-                checked.append([i, bbb[i].iloc[0]['tcp_stream'] ])
-            else:
-                in_it = stream.index(bbb[i].iloc[0]['tcp_stream'])
-        else:
-            checked.append([i, bbb[i].iloc[0]['tcp_stream']])
-
         if bbb[i].iloc[0]['connection'] == 'TCP':
+            if len(checked) > 0:
+                _, stream = zip(*checked)
+                if bbb[i].iloc[0]['tcp_stream'] not in stream:
+                    checked.append([i, bbb[i].iloc[0]['tcp_stream']])
+                else:
+                    in_it = stream.index(bbb[i].iloc[0]['tcp_stream'])
+            else:
+                checked.append([i, bbb[i].iloc[0]['tcp_stream']])
+
             tmp = flow_flag_res_fin_split(bbb[i], bbb[i]['tcp_fin_ack'].loc[lambda x: x == 1].index.tolist(),
                                           bbb[i]['tcp_res'].loc[lambda x: x == 1].index.tolist())
-            if in_it>-1:
+            if in_it > -1:
                 for z in range(len(tmp)):
                     dfs[in_it] = pd.concat([dfs[in_it], tmp[z]])
             else:
-                dfs+=tmp
+                dfs += tmp
         else:
             dfs.append(bbb[i])
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import dpkt
+from collections import Counter
 from ALFlowLyzer.application_flow_capturer.flow import DNSFlow
 from .packet import Packet
 from .flow_factory import FlowFactory
@@ -24,6 +25,8 @@ class AppFlowCapturer(object):
         f = open(pcap_file, 'rb')
         pcap = dpkt.pcap.Reader(f)
         i = 0
+        app_protocol_counts = Counter()
+        processed_packets = 0
         for ts, buf in pcap:
             i +=1
             try:
@@ -40,6 +43,8 @@ class AppFlowCapturer(object):
                 continue
 
             app_flow_packet = Packet(buf, ts)
+            app_protocol_counts[app_flow_packet.get_application_protocol()] += 1
+            processed_packets += 1
             self.__add_packet_to_flow(app_flow_packet, flows, flows_lock)
             if i % self.__read_packets_count_value_log_info == 0:
                 print(">>", i, "number of packets has been processed...")
@@ -52,6 +57,11 @@ class AppFlowCapturer(object):
 
 
         print(">> end of reading from", pcap_file)
+        if processed_packets:
+            print(">> Application protocol summary (by packet):", flush=True)
+            for protocol, count in app_protocol_counts.most_common():
+                pct = (count / processed_packets) * 100
+                print(f"  {protocol}: {count} packets, {pct:.2f}%", flush=True)
         thread_finished.set(True)
         print(f">> {self.__number_of_flows} number of flows created in total.")
         return self.__finished_flows + self.__ongoing_flows

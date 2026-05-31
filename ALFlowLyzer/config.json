@@ -1,7 +1,7 @@
 {
     "pcap_file_address": "../pcaps/my_pcap_file.pcap",
     "output_file_address": "./output-of-my-pcap-file.csv",
-    "label": "Benign",
+    "label": "",
     "number_of_threads": 4,
     "feature_extractor_min_flows": 3000,
     "writer_min_rows": 6000,

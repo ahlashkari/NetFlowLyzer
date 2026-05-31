@@ -148,6 +148,7 @@ def get_columns() -> List[str]:
         "InferredShortDCIDLenClient",
     ]
 
+    cols.append("label")
     return cols
 
 

@@ -1,0 +1,4 @@
+# UDPFlowLyzer — UDP transport features (-U)
+scipy
+multipledispatch
+dpkt

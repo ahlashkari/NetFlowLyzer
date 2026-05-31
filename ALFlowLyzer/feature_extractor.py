@@ -143,13 +143,16 @@ class FeatureExtractor(object):
                 AnsResourceRecordClass(),
             ]
         self.__features = self.__features + self.__dns_features
+        self.__dns_feature_names = {feature.name for feature in self.__dns_features}
 
     def execute(self, data: list, data_lock, flows: list, features_ignore_list: list = [],
             label: str = "") -> list:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             extracted_data = []
-            for flow in flows:
+            total_flows = len(flows)
+            progress_interval = max(500, total_flows // 20) if total_flows else 500
+            for flow_index, flow in enumerate(flows, start=1):
                 features_of_flow = {}
                 features_of_flow["flow_id"] = str(flow)
                 features_of_flow["timestamp"] = datetime.fromtimestamp(flow.get_timestamp())
@@ -158,17 +161,37 @@ class FeatureExtractor(object):
                 features_of_flow["dst_ip"] = flow.get_dst_ip()
                 features_of_flow["dst_port"] = flow.get_dst_port()
                 features_of_flow["protocol"] = flow.get_protocol()
+                is_dns_flow = flow.get_protocol() == "DNS"
+                error_counts = {}
                 for feature in self.__features:
                     if feature.name in features_ignore_list:
+                        continue
+                    if feature.name in self.__dns_feature_names and not is_dns_flow:
+                        features_of_flow[feature.name] = None
                         continue
                     feature.set_floating_point_unit(self.floating_point_unit)
                     try:
                         features_of_flow[feature.name] = feature.extract(flow)
-                    except Exception as e:
-                        print(f">> Error occurred in feature extraction for extracting >> {feature.name} << for the flow with {str(flow)} id.\n{e}\n")
-                        pass
+                    except Exception:
+                        error_counts[feature.name] = error_counts.get(feature.name, 0) + 1
+                        features_of_flow[feature.name] = None
+                if error_counts:
+                    summary = ", ".join(
+                        f"{name} ({count})" for name, count in sorted(error_counts.items())
+                    )
+                    print(
+                        f">> Feature extraction errors for flow {flow}: {summary}",
+                        flush=True,
+                    )
                 features_of_flow["label"] = label
                 extracted_data.append(features_of_flow)
+                if total_flows and (
+                    flow_index % progress_interval == 0 or flow_index == total_flows
+                ):
+                    print(
+                        f">> Feature extraction progress: {flow_index}/{total_flows} flows",
+                        flush=True,
+                    )
             with data_lock:
                 data.extend(extracted_data)
                 del extracted_data

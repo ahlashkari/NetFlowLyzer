@@ -133,9 +133,14 @@ def _dict_nan_fill(keys: Iterable[str]) -> Dict[str, float]:
 
 
 class FeatureExtractor:
-    def __init__(self, idle_gap_sec: float = 1.0) -> None:
+    def __init__(self, idle_gap_sec: float = 1.0, verbose: bool = False) -> None:
         self.idle_gap_sec = float(idle_gap_sec)
+        self.verbose = verbose
         self.flows: Dict[str, FlowAgg] = {}
+
+    def _log(self, message: str) -> None:
+        if self.verbose:
+            print(message, flush=True)
 
     def _get_or_create_flow(self, server_ip: str, server_port: int, pkt: dict, ts: float,
                              src_ip: str, src_port: int, dst_ip: str, dst_port: int) -> FlowAgg:
@@ -157,7 +162,10 @@ class FeatureExtractor:
             f.initial_dcid = dcid if isinstance(dcid, (bytes, bytearray)) else None
             f.initial_scid = scid if isinstance(scid, (bytes, bytearray)) else None
             self.flows[conn_id] = f
-            print(f"[feat] New flow: {conn_id} {src_ip}:{src_port}>{dst_ip}:{dst_port} v={f.version if f.version is not None else ''}")
+            self._log(
+                f"[feat] New flow: {conn_id} {src_ip}:{src_port}>{dst_ip}:{dst_port} "
+                f"v={f.version if f.version is not None else ''}"
+            )
         return f
 
     def observe_packet(self, ts: float, eth: dpkt.ethernet.Ethernet,
@@ -175,9 +183,9 @@ class FeatureExtractor:
         inner_eth = decap.eth if decap.decapsulated else eth
         if decap.was_vxlan:
             if decap.decapsulated:
-                print(f"[feat] VXLAN decapsulated (layers={decap.layers_stripped}, vni={decap.vni})")
+                self._log(f"[feat] VXLAN decapsulated (layers={decap.layers_stripped}, vni={decap.vni})")
             else:
-                print("[feat] VXLAN detected but not decapsulated (policy or parse)")
+                self._log("[feat] VXLAN detected but not decapsulated (policy or parse)")
 
         parsed = ethernet_to_ip_udp(inner_eth)
         if parsed is None:
@@ -209,14 +217,18 @@ class FeatureExtractor:
             dcid: Optional[bytes] = pkt.get("dcid")
             scid: Optional[bytes] = pkt.get("scid")
             if is_long:
-                print(f"[feat] QUIC long {qtype} v={version} dcid_len={pkt.get('dcid_len')} scid_len={pkt.get('scid_len')} token_len={pkt.get('token_len')} payload_len={pkt.get('payload_len')} raw_len={pkt.get('raw_len')}")
+                self._log(
+                    f"[feat] QUIC long {qtype} v={version} dcid_len={pkt.get('dcid_len')} "
+                    f"scid_len={pkt.get('scid_len')} token_len={pkt.get('token_len')} "
+                    f"payload_len={pkt.get('payload_len')} raw_len={pkt.get('raw_len')}"
+                )
             else:
-                print(f"[feat] QUIC short dcid_len={pkt.get('dcid_len')} raw_len={pkt.get('raw_len')}")
+                self._log(f"[feat] QUIC short dcid_len={pkt.get('dcid_len')} raw_len={pkt.get('raw_len')}")
 
             # Identify server ip/port from Initial (uplink)
             if is_long and qtype == "initial" and isinstance(version, int) and version != 0:
                 candidate_server_ip = dst_ip
-                print(f"[feat] Initial detected: server={candidate_server_ip}:{dst_port}")
+                self._log(f"[feat] Initial detected: server={candidate_server_ip}:{dst_port}")
 
             # Direction: Fwd if to server, else Bwd
             direction_fwd = (dst_ip == candidate_server_ip)
@@ -253,7 +265,7 @@ class FeatureExtractor:
                     flow.n_initial += 1
                     if math.isnan(flow.first_initial_ts):
                         flow.first_initial_ts = float(ts)
-                        print(f"[feat] FirstInitialTs set: {flow.first_initial_ts}")
+                        self._log(f"[feat] FirstInitialTs set: {flow.first_initial_ts}")
                     flow.version = version if isinstance(version, int) else flow.version
                     flow.initial_dcid = dcid if isinstance(dcid, (bytes, bytearray)) else flow.initial_dcid
                     flow.initial_scid = scid if isinstance(scid, (bytes, bytearray)) else flow.initial_scid
@@ -282,17 +294,17 @@ class FeatureExtractor:
                 flow.n_short += 1
                 if math.isnan(flow.first_short_ts):
                     flow.first_short_ts = float(ts)
-                    print(f"[feat] FirstShortTs set: {flow.first_short_ts}")
+                    self._log(f"[feat] FirstShortTs set: {flow.first_short_ts}")
                 # Infer short DCID length from first short header seen per receiver
                 if dcid is not None and isinstance(dcid, (bytes, bytearray)):
                     if direction_fwd:
                         if flow.inferred_short_dcid_len_server < 0:
                             flow.inferred_short_dcid_len_server = len(dcid)
-                            print(f"[feat] Inferred short DCID len (server): {flow.inferred_short_dcid_len_server}")
+                            self._log(f"[feat] Inferred short DCID len (server): {flow.inferred_short_dcid_len_server}")
                     else:
                         if flow.inferred_short_dcid_len_client < 0:
                             flow.inferred_short_dcid_len_client = len(dcid)
-                            print(f"[feat] Inferred short DCID len (client): {flow.inferred_short_dcid_len_client}")
+                            self._log(f"[feat] Inferred short DCID len (client): {flow.inferred_short_dcid_len_client}")
 
             # DCID rotation/accounting per receiver side
             if dcid is not None:
@@ -300,12 +312,12 @@ class FeatureExtractor:
                     # receiver is server
                     if len(flow.dcids_server) > 0 and dcid not in flow.dcids_server:
                         flow.rotations_server += 1
-                        print("[feat] DCID rotation (server) +1")
+                        self._log("[feat] DCID rotation (server) +1")
                     flow.dcids_server.add(dcid)
                 else:
                     if len(flow.dcids_client) > 0 and dcid not in flow.dcids_client:
                         flow.rotations_client += 1
-                        print("[feat] DCID rotation (client) +1")
+                        self._log("[feat] DCID rotation (client) +1")
                     flow.dcids_client.add(dcid)
 
     def finalize(self) -> List[Dict[str, object]]:
@@ -454,6 +466,7 @@ class FeatureExtractor:
             for k in columns:
                 if k not in row:
                     row[k] = float("nan")
+            row["label"] = ""
             rows.append(row)
         return rows
 
