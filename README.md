@@ -135,6 +135,60 @@ python netflowlyzer.py -U -i path/to/capture.pcap -o path/to/output
 
 > `requirements-dl.txt` matches `DLFlowLyzer/requirements.txt`. Use either path; the root file keeps the same layout as `requirements-ntl.txt` and `requirements-al.txt`.
 
+### Docker
+
+The image includes **all five analyzers** (`-AL`, `-NTL`, `-DL`, `-Q`, `-U`): Python dependencies from every `requirements-*.txt` file plus **TShark** for `-DL`. Base image: **Python 3.12** on Debian bookworm.
+
+**Build** (from the repository root):
+
+```bash
+docker build -t netflowlyzer .
+```
+
+**Important:** Inside the container, default paths `../input` and `../output` do not exist. Always pass **`-i`** and **`-o`** as paths **inside the container**, and mount host folders with `-v`.
+
+| Host | Container | Purpose |
+|------|-----------|---------|
+| `/path/to/pcaps` | `/data/in` | Input `.pcap` / `.pcapng` (file or folder) |
+| `/path/to/results` | `/data/out` | Output CSV directory |
+
+**Examples:**
+
+```bash
+# Help
+docker run --rm netflowlyzer --help
+
+# TCP transport only
+docker run --rm \
+  -v "/path/to/pcaps:/data/in:ro" \
+  -v "/path/to/output:/data/out" \
+  netflowlyzer -NTL -i /data/in/capture.pcap -o /data/out
+
+# All five layers on one capture
+docker run --rm \
+  -v "/path/to/pcaps:/data/in:ro" \
+  -v "/path/to/output:/data/out" \
+  netflowlyzer -NTL -AL -DL -Q -U --al-no-dns \
+  -i /data/in/capture.pcap -o /data/out
+
+# Link layer (-DL uses TShark installed in the image)
+docker run --rm \
+  -v "/path/to/pcaps:/data/in:ro" \
+  -v "/path/to/output:/data/out" \
+  netflowlyzer -DL -i /data/in/capture.pcap -o /data/out
+```
+
+**Windows (PowerShell)** — use full paths for volumes:
+
+```powershell
+docker run --rm `
+  -v "C:\path\to\pcaps:/data/in:ro" `
+  -v "C:\path\to\output:/data/out" `
+  netflowlyzer -NTL -AL -i /data/in/2.pcap -o /data/out
+```
+
+`--al-whois` may need network access from the container (`docker run` without network isolation if WHOIS lookups are required). For bulk runs, prefer `--al-no-dns` in Docker as on bare metal.
+
 ### Run all four TCP/IP layers (all three analyzers)
 
 ```bash
@@ -289,6 +343,8 @@ python netflowlyzer.py [layer flags] [options]
 
 ```
 NetFlowLyzer/
+├── Dockerfile               # All layers + TShark (see Docker section)
+├── .dockerignore
 ├── netflowlyzer.py          # Unified entry point (all TCP/IP layers)
 ├── requirements-ntl.txt     # NTL — TCP/IP layers 2–3
 ├── requirements-al.txt      # AL  — TCP/IP layer 4

@@ -1,0 +1,31 @@
+# Git and editor
+.git
+.cursor
+.vscode
+
+# Python artifacts
+__pycache__
+*.py[cod]
+*.egg-info
+.eggs
+dist
+build
+.venv
+venv
+env
+
+# Local data and outputs (mount at run time instead)
+input
+output
+*.pcap
+*.pcapng
+
+# OS and temp
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Secrets
+.env
+.env.*
