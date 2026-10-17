@@ -1,6 +1,8 @@
 ![NetFlowLyzer](bccc.jpg)
 
-## Network Flow Analyzer (NetFlowLyzer)
+# NetFlowLyzer
+
+**Network Flow Analyzer**
 
 NetFlowLyzer is an open-source, Python-based multi-layer network traffic analyzer for flow-based behavioral analysis from PCAP files. Unlike tools that focus on a single layer or a single transport protocol, NetFlowLyzer covers the **full TCP/IP stack**—**Link** (`-DL`), **Internet** and **TCP** transport (`-NTL`), **Application** (`-AL`), plus **UDP** (`-U`) and **QUIC** (`-Q`) transport flows—in one unified offline workflow. It combines link-layer switching behavior, internet and transport flow characteristics across TCP, UDP, and QUIC, and application-level protocol interactions and provides **feature extraction for all four layers both TCP and UDP** through integrated sub-packages and one unified command-line entry point (`netflowlyzer.py`). NetFlowLyzer supports bidirectional flow generation, protocol-aware parsing, connection tracking, timing analysis, and behavioral profiling.
 
@@ -497,41 +499,35 @@ DL is slower on large PCAPs than AL/NTL because PyShark drives TShark packet-by-
 
 ---
 
-## Project team
-
-* [**Arash Habibi Lashkari**](http://ahlashkari.com/index.asp) — Founder and supervisor
-
-**ALFlowLyzer**
-
-* [**Moein Shafi**](https://github.com/moein-shafi) — Graduate student, researcher and developer, York University
-* [**Hardik Mohanty**](https://github.com/hardhik-99) — Mitacs GRI, researcher and developer, York University
-
-**NTLFlowLyzer**
-
-* [**Moein Shafi**](https://github.com/moein-shafi) — Graduate student, researcher and developer, York University (2022–2024)
-* [**Mohamed Aziz El Fadhel**](https://github.com/MohamedAzizFadhel) — Mitacs Global Research Intern, York University (2024)
-* [**Sepideh Niktabe**](https://github.com/sepideh2020) — Graduate student, York University (2022–2023)
-* [**Mehrsa Khoshpasand**](https://github.com/Khoshpasand-mehrsa) — Research assistant, York University (2022)
-* [**Parisa Ghanad**](https://github.com/parishisit) — Volunteer researcher (2022)
-
-**UDPFlowLyzer & QuicFlowLyzer**
-* [**Sepehr Jafari:**](https://github.com/Aeripsen) Research Assistant - York University (2025 - 2026)
-
-**DLFlowLyzer**
-
-
-* [**Amirhossein Ahmadnejad Roudsari**](https://github.com/aahmadnejad) — Graduate researcher and developer, York University (2024–2025)
-
----
-
-## Acknowledgement
-
-This project has been made possible through funding from the Natural Sciences and Engineering Research Council of Canada (NSERC, #RGPIN-2020-04701) and the Canada Research Chair (Tier II, #CRC-2021-00340) held by Arash Habibi Lashkari.
-
----
-
 ## License
 
 NetFlowLyzer is released under the **GNU General Public License v3.0 (GPL-3.0)**. See [LICENSE](LICENSE) in the repository root.
 
 This project integrates code from [ALFlowLyzer](https://github.com/ahlashkari/ALFlowLyzer), [NTLFlowLyzer](https://github.com/ahlashkari/NTLFlowLyzer), [DLFlowLyzer](https://github.com/ahlashkari/DLFlowLyzer), [QUICFlowLyzer](https://github.com/ahlashkari/QUICFlowLyzer), and [UDPFlowLyzer](https://github.com/ahlashkari/UDPFlowLyzer). Each upstream repository may define its own license terms; `DLFlowLyzer/LICENSE` is also included under the bundled `DLFlowLyzer/` folder.
+
+
+## Project Team
+
+* [**Arash Habibi Lashkari**](http://ahlashkari.com/index.asp): Founder and Supervisor
+
+**ALFlowLyzer**
+* [**Moein Shafi**](https://github.com/moein-shafi): Graduate Student - York University (2022–2024)
+* [**Hardhik Mohanty**](https://github.com/hardhik-99): Mitacs Globalink Research Intern - York University (2022)
+
+**NTLFlowLyzer**
+* [**Moein Shafi**](https://github.com/moein-shafi): Graduate Student - York University (2022–2024)
+* [**Mohamed Aziz El Fadhel**](https://github.com/MohamedAzizFadhel): Mitacs Globalink Research Intern - York University (2024)
+* [**Sepideh Niktabe**](https://github.com/sepideh2020): Graduate Student - York University (2022–2023)
+* [**Mehrsa Khoshpasand**](https://github.com/Khoshpasand-mehrsa): Research Assistant - York University (2022)
+* [**Parisa Ghanad**](https://github.com/parishisit): Volunteer Researcher and Developer (2022)
+
+**UDPFlowLyzer & QUICFlowLyzer**
+* [**Sepehr Jafari**](https://github.com/Aeripsen): Research Assistant - York University (2025–2026)
+
+**DLFlowLyzer**
+* [**Amirhossein Ahmadnejad Roudsari**](https://github.com/aahmadnejad): Graduate Student - York University (2024–2025)
+
+
+## Acknowledgement
+
+This project has been made possible through funding from the Natural Sciences and Engineering Research Council of Canada (NSERC, #RGPIN-2020-04701) and the Canada Research Chair (Tier II, #CRC-2021-00340) held by Arash Habibi Lashkari, and the Mitacs Globalink Research Internship (GRI) program. 
